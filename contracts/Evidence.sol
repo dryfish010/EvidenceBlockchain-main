@@ -2,16 +2,22 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./tokenEX.sol";
+//teat hash:0x74657374696e675f65766964656e63655f686173685f323032365f30335f3137;
+// 1. 定義 Token (ICO 規費代幣)
+contract EvidenceToken is ERC20 {
+    constructor() ERC20("EvidenceToken", "EVT") {
+        _mint(msg.sender, 1000000 * 10 ** decimals());
+    }
+}
 
 // 2. 數位證據管理系統
 contract EvidenceSystem is AccessControl {
+    //----initial setting ------
     bytes32 public constant REGIONAL_ADMIN_ROLE = keccak256("REGIONAL_ADMIN_ROLE");
     bytes32 public constant SUBMITTER_ROLE = keccak256("SUBMITTER_ROLE");
 
-    IERC20 public token;
+    EvidenceToken public token;
     uint256 public uploadFee = 10 * 10**18; // 預設規費 10 EVT
 
     struct Case {
@@ -120,10 +126,10 @@ contract EvidenceSystem is AccessControl {
         string memory _fileFormat,
         string memory _location
     ) public {
-        // 1. 權限檢查
+        // 1. 權限檢查 Access Control 
         require(hasRole(SUBMITTER_ROLE, msg.sender), "Error: No Submitter Role");
 
-        // 2. 案件是否存在與指派檢查
+        // 2. 案件是否存在與指派檢查 Case assign or no 
         Case storage c = allCases[_caseId];
         require(c.exists, "Error: Case ID does not exist");
 
@@ -137,13 +143,14 @@ contract EvidenceSystem is AccessControl {
         require(isAuthorized, "Error: Not assigned to this case");
 
         // 3. 代幣支付檢查 (ERC20 Integration)
-        require(token.balanceOf(msg.sender) >= uploadFee, "Error: Low token balance");
-        require(token.allowance(msg.sender, address(this)) >= uploadFee, "Error: Token not approved");
+        //require(token.balanceOf(msg.sender) >= uploadFee, "Error: Low token balance");
+        //require(token.allowance(msg.sender, address(this)) >= uploadFee, "Error: Token not approved");
 
-        // 4. 執行代幣扣款
-        token.transferFrom(msg.sender, address(this), uploadFee);
+        // 4. 執行代幣扣款 
+        //token.transferFrom(msg.sender, address(this), uploadFee);
 
-        // 5. 儲存證據資料
+        // 5. 儲存證據資料 store evidence 
+        // using case, file hash and time, hash tem into the only id
         bytes32 evidenceId = keccak256(abi.encodePacked(_caseId, _evidenceHash, block.timestamp));
         allEvidence[evidenceId] = Evidence({
             isVer: false,
@@ -167,6 +174,7 @@ contract EvidenceSystem is AccessControl {
         return (e.isVer, e.evidencelocation, e.timestamp, e.approveBy);
     }
 
+    // other fuction --> for show result and test 
     function getAssignedSubmitters(string memory _caseId) public view returns (address[] memory) {
         require(allCases[_caseId].exists, "Case does not exist");
         return allCases[_caseId].assignedTo;
@@ -177,7 +185,6 @@ contract EvidenceSystem is AccessControl {
         isSubmitter = hasRole(SUBMITTER_ROLE, account);
     }
 
-    // --- 內部輔助函數 ---
     function uintToString(uint256 v) internal pure returns (string memory) {
         if (v == 0) return "0";
         uint256 j = v;
