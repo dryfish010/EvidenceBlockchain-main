@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "../contracts/Evidence.sol";
+//import "hardhat/console.sol";
 
 contract EvidenceSystemTest {
     EvidenceToken token;
@@ -16,7 +17,9 @@ contract EvidenceSystemTest {
     // 每次測試前的環境初始化
     function setupEnvironment() internal {
         token = new EvidenceToken();
-        system = new EvidenceSystem(address(token));
+        EvidenceNFT nft = new EvidenceNFT();
+        system = new EvidenceSystem(address(token), address(nft));
+
         
         // 賦予測試合約自己 Root Admin 權限
         system.addRegionalAdmin(address(this), "NW4");

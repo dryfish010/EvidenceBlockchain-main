@@ -182,3 +182,37 @@
     border-right-color: var(--border);
   }
 }
+.container {
+  padding: 20px;
+  font-family: Arial;
+  background-color: #f4f6f8;
+}
+
+.header {
+  background: #2c3e50;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.middle {
+  display: flex;
+  gap: 20px;
+}
+
+.panel {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  flex: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: left;
+}
+
+button {
+  display: block;
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 100%;
+}

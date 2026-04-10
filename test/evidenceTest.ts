@@ -12,7 +12,7 @@ describe("Test", function () {
   it("should work", async function () {
     const { ethers } = await hre.network.connect();
     const signers = await ethers.getSigners();
-    const owner = signers[0]; // 👈 不用特別型別
+    const owner = signers[0]; 
   });
 });
 
@@ -36,9 +36,13 @@ describe("EvidenceSystem Forensic Workflow (Full Test Suite)", function () {
     const EvidenceTokenFactory = await ethers.getContractFactory("EvidenceToken");
     token = (await EvidenceTokenFactory.deploy()) as EvidenceToken;
 
+    const EvidenceNFTFactory = await ethers.getContractFactory("EvidenceNFT");
+    const nft = (await EvidenceNFTFactory.deploy()) as any;
+
     const EvidenceSystemFactory = await ethers.getContractFactory("EvidenceSystem");
-    system = (await EvidenceSystemFactory.deploy(await token.getAddress())) as EvidenceSystem;
+    system = (await EvidenceSystemFactory.deploy(await token.getAddress(), await nft.getAddress())) as EvidenceSystem;
     const tx = await system.connect(rootAdmin).addRegionalAdmin(unauthorized.address, "NW4");
+    /*
      console.log("==== Transaction Raw ====");
         console.log("Sender:", tx.from);
         console.log("Nonce:", tx.nonce);
@@ -53,10 +57,13 @@ describe("EvidenceSystem Forensic Workflow (Full Test Suite)", function () {
         console.log("Status:", receipt.status === 1 ? "Success" : "Failed");
         console.log("Block number:", receipt.blockNumber);
         console.log("Gas used:", receipt.gasUsed.toString());
-        console.log("Logs:", receipt.logs); // 事件 logs 陣列
+        //console.log("Logs:", receipt.logs); // 事件 logs 陣列
+        /*
         receipt.logs.forEach((log, i) => {
             console.log(`Log ${i}:`, log);
         });
+        */
+
 
     // 初始資金分配
     await token.transfer(submitter.address, ethers.parseUnits("100", 18));
@@ -73,6 +80,7 @@ describe("EvidenceSystem Forensic Workflow (Full Test Suite)", function () {
   // --- 1. Super Admin 功能測試 ---
   describe("Super Admin: Role Management", function () {
     it("Should allow Root Admin to add a Regional Admin", async function () {
+        console.log("Testing Root Admin adding Regional Admin...");
         const { ethers } = await hre.network.connect();
         const [owner, user1] = await ethers.getSigners();
         //await printRoles(owner.address, system);

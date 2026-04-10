@@ -55,3 +55,16 @@ After setting the variable, you can run the deployment with the Sepolia network:
 ```shell
 npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
 ```
+run SPA :
+```shell
+cd  fronted 
+npm run dev
+```
+deploy blockchain :
+``` shell
+npx hardhat run script/deploy.js --network localhost
+```
+run node : 
+``` shell
+ npx hardhat node
+```

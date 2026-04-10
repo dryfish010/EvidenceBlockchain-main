@@ -3,21 +3,19 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./EvidenceToken.sol";
+
 //teat hash:0x74657374696e675f65766964656e63655f686173685f323032365f30335f3137;
 // 1. 定義 Token (ICO 規費代幣)
-contract EvidenceToken is ERC20 {
-    constructor() ERC20("EvidenceToken", "EVT") {
-        _mint(msg.sender, 1000000 * 10 ** decimals());
-    }
-}
 
 // 2. 數位證據管理系統
 contract EvidenceSystem is AccessControl {
     //----initial setting ------
     bytes32 public constant REGIONAL_ADMIN_ROLE = keccak256("REGIONAL_ADMIN_ROLE");
     bytes32 public constant SUBMITTER_ROLE = keccak256("SUBMITTER_ROLE");
-
     EvidenceToken public token;
+    EvidenceNFT public evidenceNFT;
+    
     uint256 public uploadFee = 10 * 10**18; // 預設規費 10 EVT
 
     struct Case {
@@ -54,10 +52,12 @@ contract EvidenceSystem is AccessControl {
     event CaseStatusUpdated(string caseId, string newStatus);
     event EvidenceVerified(bytes32 evidenceId, address indexed verifier);
 
-    constructor(address _tokenAddress) {
+    constructor(address _tokenAddress, address _nftAddress) {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         token = EvidenceToken(_tokenAddress);
+        evidenceNFT = EvidenceNFT(_nftAddress);
     }
+
 
     // --- 管理功能 (Root Admin) ---
     function addRegionalAdmin(address _admin, string memory _postcode) public onlyRole(DEFAULT_ADMIN_ROLE) {

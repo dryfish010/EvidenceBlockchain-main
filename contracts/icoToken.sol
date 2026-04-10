@@ -12,14 +12,17 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import "./EvidenceToken.sol";
 
 // token interface
+// 定義一個接口，讓 ICOToken 可以與任何符合 ERC20、AccessControl 和 ERC20Permit 的代幣互動
 interface IMintableToken is IERC20, IAccessControl, IERC20Permit {
     function mint(address to, uint256 amount) external;
 }
 
 
-contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
+contract ICOToken is AccessControl ,ReentrancyGuard, Pausable{
     // only super admin can set token price and sale time
-    bytes32 public constant SUPER_ADMIN_ROLE = keccak256("SUPER_ADMIN_ROLE");
+    //bytes32 public constant DEFAULT_ADMIN_ROLE = keccak256("DEFAULT_ADMIN_ROLE");
+    //reetrancy guard to prevent reentrancy attack
+    //pausable to allow pausing the sale in emergencies
 
     // ---Token details---
     IMintableToken public token;
@@ -41,8 +44,8 @@ contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
 
     //token constructor
     constructor(
-        string memory _name,
-        string memory _symbol,
+        //string memory _name,
+        //string memory _symbol,
         address _tokenAddress,
         uint256 _saleStartTime,
         uint256 _saleEndTime,
@@ -64,7 +67,7 @@ contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
         totalTokensForSale = _totalTokensForSale;
 
         //role setup
-        _grantRole(SUPER_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     //modifier to check if sale is active
@@ -86,6 +89,7 @@ contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
         //mint tokens to buyer
         token.mint(msg.sender, tokensToBuy);
         tokensSold += tokensToBuy;
+        
 
         emit TokensPurchased(msg.sender, msg.value, tokensToBuy);
     }
@@ -94,7 +98,7 @@ contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
         buyTokens();
     }
     //withdraw collected ETH
-    function withdraw() external onlyRole(SUPER_ADMIN_ROLE) {
+    function withdraw() external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 balance = address(this).balance;
         require(balance > 0, "No ETH to withdraw");
         payable(msg.sender).transfer(balance);
@@ -102,26 +106,26 @@ contract ICOtokenSystem is AccessControl ,ReentrancyGuard, Pausable{
     }
     //--- admin functions ---
     // admin functions to set sale parameters
-    function setSaleWindowUpdated(uint256 _start, uint256 _end) external onlyRole(SUPER_ADMIN_ROLE) {
+    function setSaleWindowUpdated(uint256 _start, uint256 _end) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_start < _end, "Invalid sale window");
         saleStartTime = _start;
         saleEndTime = _end;
         emit SaleWindowUpdated (_start, _end);
     }
     //admin can change token price
-    function setRateUpdated (uint256 _newRate) external onlyRole(SUPER_ADMIN_ROLE) {
+    function setRateUpdated (uint256 _newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newRate > 0, "Rate must be > 0");
         tokensPerEth = _newRate;
         emit RateUpdated (_newRate);
     }
     //admin can set sale cap
-    function setSaleCapUpdated (uint256 _newCap) external onlyRole(SUPER_ADMIN_ROLE) {
+    function setSaleCapUpdated (uint256 _newCap) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newCap > 0, "Cap must be > 0");
         saleCap = _newCap;
         emit SaleCapUpdated (_newCap);
     }
     //admin can set total tokens for sale
-    function setTotalTokensForSale(uint256 _totalTokensForSale) external onlyRole(SUPER_ADMIN_ROLE) {
+    function setTotalTokensForSale(uint256 _totalTokensForSale) external onlyRole(DEFAULT_ADMIN_ROLE) {
         //require(_totalTokensForSale <= MAX_SUPPLY, "Exceeds max supply");
         totalTokensForSale = _totalTokensForSale;
         emit TokensForSaleSet(_totalTokensForSale);

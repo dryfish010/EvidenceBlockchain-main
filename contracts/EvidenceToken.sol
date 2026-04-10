@@ -9,7 +9,7 @@ pragma solidity ^0.8.20;
 
 // Token (ICO 規費代幣)
 contract EvidenceToken is ERC20, Ownable {
-    uint256 public immutable MAX_SUPPLY = 1_000_000 * 10**decimals();
+    uint256 public immutable MAX_SUPPLY = 1_000_000 * 100 **decimals();
     constructor() ERC20("EvidenceToken", "EVT") Ownable(msg.sender) {
         _mint(msg.sender, 1000000 * 10 ** decimals());
     }
@@ -42,7 +42,7 @@ contract EvidenceNFT is ERC721, AccessControl {
         return super.supportsInterface(interfaceId);
     }
 
-    
+    // 只有具有 SUBMITTER_ROLE 的地址才能鑄造 NFT
     function mintEvidenceNFT(
         address to,
         string memory caseId,
@@ -51,7 +51,7 @@ contract EvidenceNFT is ERC721, AccessControl {
         string memory evidenceName,
         string memory evidencelocation
     ) external onlyRole(SUBMITTER_ROLE) returns (uint256) {
-
+        // mint NFT
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;
         _safeMint(to, tokenId);
